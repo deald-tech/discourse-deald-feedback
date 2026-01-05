@@ -1,0 +1,33 @@
+en:
+  admin_js:
+    admin:
+      site_settings:
+        categories:
+          deald_feedback: "DEALD Feedback"
+  js:
+    deald_feedback:
+      title: "Feedback"
+      leave_feedback: "Leave Feedback"
+      rating: "Rating"
+      comment: "Comment"
+      ticket_number: "Ticket Number"
+      ticket_placeholder: "Enter the transaction ticket number"
+      submit: "Submit Feedback"
+      cancel: "Cancel"
+      dispute: "Dispute"
+      disputed: "DISPUTED"
+      dispute_reason: "Reason for dispute"
+      dispute_submit: "Submit Dispute"
+      delete: "Delete"
+      edit: "Edit"
+      confirm_delete: "Are you sure you want to delete this feedback?"
+      no_feedback: "No feedback yet"
+      stats:
+        total: "Total"
+        positive: "Positive"
+        neutral: "Neutral"
+        negative: "Negative"
+      errors:
+        ticket_required: "Ticket number is required"
+        rating_required: "Please select a rating"
+        comment_required: "Please write a comment"
