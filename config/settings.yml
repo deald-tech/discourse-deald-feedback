@@ -1,0 +1,18 @@
+deald_feedback:
+  deald_feedback_enabled:
+    default: true
+    client: true
+  deald_feedback_min_trust_level:
+    default: 1
+    min: 0
+    max: 4
+  deald_feedback_edit_window_hours:
+    default: 48
+    min: 0
+    max: 720
+  deald_feedback_allow_self:
+    default: false
+    client: true
+  deald_feedback_allow_on_admins:
+    default: false
+    client: true

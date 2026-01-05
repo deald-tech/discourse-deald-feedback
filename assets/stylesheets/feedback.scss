@@ -1,0 +1,237 @@
+.deald-feedback {
+  &-container {
+    margin: 20px 0;
+  }
+  
+  &-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    
+    h3 {
+      margin: 0;
+    }
+  }
+  
+  &-stats {
+    display: flex;
+    gap: 20px;
+    padding: 15px;
+    background: var(--primary-very-low);
+    border-radius: 8px;
+    margin-bottom: 20px;
+    
+    .stat {
+      text-align: center;
+      
+      .number {
+        font-size: 1.5em;
+        font-weight: bold;
+      }
+      
+      .label {
+        font-size: 0.85em;
+        color: var(--primary-medium);
+      }
+    }
+    
+    .positive .number { color: #2ecc71; }
+    .neutral .number { color: #f39c12; }
+    .negative .number { color: #e74c3c; }
+  }
+  
+  &-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  &-item {
+    padding: 15px;
+    background: var(--primary-very-low);
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-low);
+    
+    &.positive { border-left-color: #2ecc71; }
+    &.neutral { border-left-color: #f39c12; }
+    &.negative { border-left-color: #e74c3c; }
+    &.disputed { 
+      border-left-color: #e74c3c;
+      background: rgba(231, 76, 60, 0.1);
+    }
+  }
+  
+  &-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    
+    .author {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      
+      img {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+      }
+    }
+    
+    .rating {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      
+      .stars {
+        color: #f1c40f;
+      }
+      
+      .disputed-badge {
+        background: #e74c3c;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.75em;
+        font-weight: bold;
+      }
+    }
+  }
+  
+  &-item-ticket {
+    font-size: 0.85em;
+    color: var(--primary-medium);
+    margin-bottom: 8px;
+    
+    .ticket-number {
+      font-weight: bold;
+      color: var(--tertiary);
+    }
+  }
+  
+  &-item-comment {
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+  
+  &-item-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    
+    button {
+      padding: 5px 12px;
+      font-size: 0.85em;
+    }
+    
+    .dispute-btn {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      
+      &:hover {
+        background: #c0392b;
+      }
+    }
+    
+    .delete-btn {
+      background: var(--danger);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  }
+  
+  &-form {
+    padding: 20px;
+    background: var(--primary-very-low);
+    border-radius: 8px;
+    margin-bottom: 20px;
+    
+    .form-group {
+      margin-bottom: 15px;
+      
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      
+      input, textarea, select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--primary-low);
+        border-radius: 4px;
+        background: var(--secondary);
+        color: var(--primary);
+      }
+      
+      textarea {
+        min-height: 100px;
+        resize: vertical;
+      }
+    }
+    
+    .rating-select {
+      display: flex;
+      gap: 10px;
+      
+      .star {
+        font-size: 24px;
+        cursor: pointer;
+        color: var(--primary-low);
+        
+        &.active, &:hover {
+          color: #f1c40f;
+        }
+      }
+    }
+    
+    .submit-btn {
+      background: var(--tertiary);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      
+      &:hover {
+        background: var(--tertiary-hover);
+      }
+    }
+  }
+  
+  &-dispute-form {
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(231, 76, 60, 0.1);
+    border-radius: 4px;
+    
+    textarea {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid var(--primary-low);
+      border-radius: 4px;
+    }
+  }
+}
+
+// Stars display
+.feedback-stars {
+  display: inline-flex;
+  
+  .star {
+    color: #f1c40f;
+    
+    &.empty {
+      color: var(--primary-low);
+    }
+  }
+}
