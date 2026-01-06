@@ -2,7 +2,7 @@
 
 # name: discourse-deald-feedback
 # about: User feedback and rating system for DEALD marketplace
-# version: 1.0.0
+# version: 1.3.0
 # authors: DEALD
 # url: https://github.com/deald-tech/discourse-deald-feedback
 
@@ -31,6 +31,7 @@ after_initialize do
       t.integer :rating, null: false
       t.text :comment
       t.string :ticket_number, null: false
+      t.string :role, default: "buyer"
       t.boolean :disputed, default: false
       t.text :dispute_reason
       t.datetime :disputed_at
@@ -46,6 +47,11 @@ after_initialize do
     ActiveRecord::Base.connection.add_index :deald_feedbacks, [:author_id, :recipient_id, :ticket_number], unique: true, name: 'idx_feedback_unique'
   end
 
+  # Add role column if missing
+  unless ActiveRecord::Base.connection.column_exists?(:deald_feedbacks, :role)
+    ActiveRecord::Base.connection.add_column :deald_feedbacks, :role, :string, default: "buyer"
+  end
+
   # Model
   class ::DealdFeedback::Feedback < ActiveRecord::Base
     self.table_name = "deald_feedbacks"
@@ -59,6 +65,7 @@ after_initialize do
     validates :rating, presence: true, inclusion: { in: 1..5 }
     validates :ticket_number, presence: true
     validates :comment, length: { maximum: 1000 }
+    validates :role, inclusion: { in: %w[buyer seller] }, allow_nil: true
     
     validate :author_cannot_be_recipient
     validate :unique_feedback_per_ticket
@@ -67,6 +74,10 @@ after_initialize do
     scope :by_user, ->(user_id) { where(author_id: user_id) }
     scope :disputed, -> { where(disputed: true, resolution_status: nil) }
     scope :resolved, -> { where.not(resolution_status: nil) }
+    scope :as_buyer, -> { where(role: "buyer") }
+    scope :as_seller, -> { where(role: "seller") }
+    
+    after_create :notify_recipient
     
     def positive?
       rating >= 4
@@ -94,6 +105,43 @@ after_initialize do
         resolved_at: Time.current,
         resolution_status: status
       )
+      notify_dispute_resolved!
+    end
+    
+    def notify_recipient
+      Notification.create!(
+        notification_type: Notification.types[:custom],
+        user_id: recipient_id,
+        data: {
+          message: "feedback.received",
+          display_username: author.username,
+          custom_type: "feedback_received",
+          rating: rating,
+          ticket_number: ticket_number
+        }.to_json,
+        topic_id: nil,
+        post_number: nil
+      )
+    rescue => e
+      Rails.logger.error("Failed to notify feedback recipient: #{e.message}")
+    end
+    
+    def notify_dispute_resolved!
+      Notification.create!(
+        notification_type: Notification.types[:custom],
+        user_id: recipient_id,
+        data: {
+          message: "feedback.dispute_resolved",
+          display_username: resolved_by&.username || "Admin",
+          custom_type: "dispute_resolved",
+          resolution_status: resolution_status,
+          ticket_number: ticket_number
+        }.to_json,
+        topic_id: nil,
+        post_number: nil
+      )
+    rescue => e
+      Rails.logger.error("Failed to notify dispute resolution: #{e.message}")
     end
     
     private
@@ -121,6 +169,7 @@ after_initialize do
   class ::DealdFeedback::FeedbackController < ::ApplicationController
     requires_plugin DealdFeedback::PLUGIN_NAME
     before_action :ensure_logged_in, except: [:index, :show]
+    skip_before_action :verify_authenticity_token, only: [:create, :destroy, :dispute, :resolve]
     
     def index
       user = User.find_by(username: params[:username])
@@ -149,13 +198,25 @@ after_initialize do
       raise Discourse::InvalidAccess.new(I18n.t("deald_feedback.errors.cannot_feedback_self")) if current_user.id == recipient.id
       raise Discourse::InvalidAccess.new(I18n.t("deald_feedback.errors.cannot_feedback_admin")) if recipient.admin? && !SiteSetting.deald_feedback_allow_on_admins
       
-      feedback = DealdFeedback::Feedback.create!(
+      # Get role from params - check multiple locations
+      role_param = params[:role] || params.dig(:feedback, :role)
+      role_value = role_param.to_s.downcase.strip
+      role_value = "buyer" unless %w[buyer seller].include?(role_value)
+      
+      Rails.logger.info "DEALD FEEDBACK: Creating feedback with role=#{role_value} (param was: #{role_param.inspect})"
+      
+      feedback = DealdFeedback::Feedback.new(
         author_id: current_user.id,
         recipient_id: recipient.id,
         rating: params[:rating].to_i,
         comment: params[:comment],
-        ticket_number: params[:ticket_number]
+        ticket_number: params[:ticket_number],
+        role: role_value
       )
+      
+      feedback.save!
+      
+      Rails.logger.info "DEALD FEEDBACK: Saved feedback ##{feedback.id} with role=#{feedback.role}"
       
       render json: { feedback: serialize_feedback(feedback) }
     end
@@ -203,6 +264,7 @@ after_initialize do
         rating: feedback.rating,
         comment: feedback.comment,
         ticket_number: feedback.ticket_number,
+        role: feedback.role || "buyer",
         disputed: feedback.disputed,
         dispute_reason: feedback.dispute_reason,
         disputed_at: feedback.disputed_at,
